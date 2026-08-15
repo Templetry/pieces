@@ -23,3 +23,5 @@ Adopting a common piece records **this repository** as its source, so `templetry
 ## Contributing
 
 Keep the rule that makes pieces safe: a piece may only add files that do not exist in the project, and may only touch shared files through declared patches. Wiring that lives in code needs the form to expose a socket.
+
+The full guide: [authoring pieces](https://github.com/Templetry/wiki/blob/main/guide/authoring-pieces.md).
