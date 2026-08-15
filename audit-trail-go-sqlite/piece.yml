@@ -1,0 +1,7 @@
+schema_version: 1
+name: audit-trail
+description: Append-only record of who changed what and when — Go + SQLite implementation
+# The same concept the FastAPI forms get from their own audit-trail piece:
+# one idea, one implementation per ecosystem (ADR-0016).
+applies_to:
+  - go-rest-sqlite

@@ -1,0 +1,7 @@
+schema_version: 1
+name: renovate
+description: Automated dependency updates — grouped scheduled PRs, immediate security fixes, monthly lockfile refresh (any ecosystem)
+# No applies_to: dependency drift is universal, and so is this piece.
+# No variables either: renovate.json takes no comments, so a directive
+# could not reach it — and a variable that saves one edit of a JSON file
+# is not worth the machinery. Edit the file; it is yours.

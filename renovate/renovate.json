@@ -1,0 +1,37 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommits"
+  ],
+  "schedule": ["before 6am on monday"],
+  "timezone": "Europe/Madrid",
+  "prConcurrentLimit": 5,
+  "packageRules": [
+    {
+      "description": "Group non-major updates so review is one PR, not twenty.",
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "non-major dependencies",
+      "automerge": false
+    },
+    {
+      "description": "Majors always arrive alone and are read by a human.",
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "labels": ["dependencies", "major"]
+    },
+    {
+      "description": "Security fixes ignore the schedule.",
+      "matchDatasources": ["*"],
+      "vulnerabilityAlerts": {
+        "schedule": ["at any time"],
+        "labels": ["security"]
+      }
+    }
+  ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am on the first day of the month"]
+  }
+}
