@@ -20,6 +20,15 @@ Form-local pieces win over common ones on a name clash: a form shipping its own 
 
 Adopting a common piece records **this repository** as its source, so `templetry update` follows it here — fix a piece once and every project that adopted it sees the fix.
 
+## Verification
+
+Every piece here is applied in CI the way a user applies it: a target form is
+rendered from the catalog, the piece is fetched **from the commit under test**
+through the registry, and the result is built and tested. A common piece is the
+only Templetry code that lands inside somebody else’s existing project, so a
+local shortcut that cannot fail the way an install fails would not be worth
+much.
+
 ## Contributing
 
 Keep the rule that makes pieces safe: a piece may only add files that do not exist in the project, and may only touch shared files through declared patches. Wiring that lives in code needs the form to expose a socket.

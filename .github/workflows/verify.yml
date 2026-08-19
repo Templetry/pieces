@@ -1,0 +1,91 @@
+name: Verify pieces
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Weekly: a piece is applied into projects generated from templates that
+    # keep moving, so it can break without anything here changing.
+    - cron: "0 8 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # A common piece is the only Templetry code that lands inside somebody
+  # else's existing project, and it was the only code with nothing verifying
+  # it. Each job renders a real target form, applies the piece the way a user
+  # would — through the registry, fetched from this very commit — and builds
+  # the result.
+  audit-trail:
+    name: audit-trail into go-rest-sqlite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Templetry/.github/actions/setup-templetry@main
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+
+      - name: Point the catalog's pieces at this commit
+        run: ./bin/registry-at-head.sh "$RUNNER_TEMP/registry.json"
+
+      - name: Render the target project
+        run: |
+          templetry init go/rest-sqlite --out "$RUNNER_TEMP/out" \
+            --set "project_name=Verify App" --set "module_path=example.com/verify-app"
+
+      - name: Adopt the piece
+        run: templetry add audit-trail "$RUNNER_TEMP/out" --registry "$RUNNER_TEMP/registry.json"
+
+      - name: The result compiles and its tests pass
+        working-directory: ${{ runner.temp }}/out
+        run: |
+          go build ./...
+          go test ./...
+
+      - name: The piece recorded its own source (ADR-0016)
+        working-directory: ${{ runner.temp }}/out
+        run: |
+          grep -q "audit-trail" .templetry-answers.yml
+          grep -q "Templetry/pieces" .templetry-answers.yml
+
+  renovate:
+    name: renovate into go-cli
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Templetry/.github/actions/setup-templetry@main
+
+      - name: Point the catalog's pieces at this commit
+        run: ./bin/registry-at-head.sh "$RUNNER_TEMP/registry.json"
+
+      - name: Render a project and adopt the piece
+        run: |
+          templetry init go/cli --out "$RUNNER_TEMP/out" \
+            --set "project_name=Verify App" --set "module_path=example.com/verify-app"
+          templetry add renovate "$RUNNER_TEMP/out" --registry "$RUNNER_TEMP/registry.json"
+
+      - name: Renovate accepts the config it would be given
+        run: |
+          # The failure this catches is silent by nature: Renovate ignores a
+          # config it cannot parse, so a broken file looks exactly like a
+          # repository with no updates to make.
+          npx --yes --package renovate renovate-config-validator \
+            "$RUNNER_TEMP/out/renovate.json"
+
+  manifests:
+    name: Every piece is declared
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node bin/check-manifests.mjs
