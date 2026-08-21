@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "templetry": {
+      "command": "templetry-mcp"
+    }
+  }
+}

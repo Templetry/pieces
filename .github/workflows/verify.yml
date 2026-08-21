@@ -80,6 +80,35 @@ jobs:
           npx --yes --package renovate renovate-config-validator \
             "$RUNNER_TEMP/out/renovate.json"
 
+  agent-pointers:
+    name: agent-pointers into go-cli
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Templetry/.github/actions/setup-templetry@main
+
+      - name: Point the catalog pieces at this commit
+        run: ./bin/registry-at-head.sh "$RUNNER_TEMP/registry.json"
+
+      - name: Render a project and adopt the piece
+        run: |
+          templetry init go/cli --out "$RUNNER_TEMP/out"             --set "project_name=Verify App" --set "module_path=example.com/verify-app"
+          templetry add agent-pointers "$RUNNER_TEMP/out" --registry "$RUNNER_TEMP/registry.json"
+
+      - name: Every pointer landed, and points at a file that exists
+        working-directory: ${{ runner.temp }}/out
+        run: |
+          test -f AGENTS.md
+          for f in CLAUDE.md GEMINI.md .github/copilot-instructions.md .cursor/rules/templetry.mdc; do
+            test -f "$f" || { echo "::error::$f missing"; exit 1; }
+            grep -q "AGENTS.md" "$f" || { echo "::error::$f does not point at AGENTS.md"; exit 1; }
+          done
+          # A pointer to a file that is not there is worse than no pointer.
+          node -e "JSON.parse(require('fs').readFileSync('.mcp.json','utf8'))"
+
+      - name: The project still builds after adopting it
+        run: cd "$RUNNER_TEMP/out" && go build ./...
+
   manifests:
     name: Every piece is declared
     runs-on: ubuntu-latest

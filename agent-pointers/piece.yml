@@ -1,0 +1,11 @@
+schema_version: 1
+name: agent-pointers
+description: One instruction file per AI coding tool, each pointing at this project's AGENTS.md (any ecosystem)
+# No applies_to: every Templetry form ships an AGENTS.md, so every project
+# can use these.
+#
+# This is a piece rather than part of each form on purpose. The files are
+# identical in all twenty-six forms, and the formats churn — Cursor has
+# changed its convention twice. As a piece, one fix here reaches every
+# project that adopted it through `templetry update`. In the forms, the same
+# fix would be a pull request against twenty-six repositories.

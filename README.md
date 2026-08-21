@@ -6,6 +6,7 @@ Pieces that are not specific to one form ([ADR-0016](https://github.com/Templetr
 |---|---|---|
 | [`renovate/`](renovate/) | any template | Renovate config: grouped scheduled PRs, immediate security fixes, monthly lockfile refresh |
 | [`audit-trail-go-sqlite/`](audit-trail-go-sqlite/) | `go-rest-sqlite` | Append-only audit table, repository and read-only endpoint |
+| [`agent-pointers/`](agent-pointers/) | any template | One instruction file per AI tool, each pointing at the project's `AGENTS.md`, plus an MCP config so an agent can adopt pieces and run updates itself |
 
 ## How it works
 
