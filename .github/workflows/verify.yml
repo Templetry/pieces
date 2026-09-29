@@ -109,6 +109,40 @@ jobs:
       - name: The project still builds after adopting it
         run: cd "$RUNNER_TEMP/out" && go build ./...
 
+  doppler:
+    name: doppler into go-http-service
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Templetry/.github/actions/setup-templetry@main
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+
+      - name: Point the catalog pieces at this commit
+        run: ./bin/registry-at-head.sh "$RUNNER_TEMP/registry.json"
+
+      - name: Render a project and adopt the piece
+        run: |
+          templetry init go/http-service --out "$RUNNER_TEMP/out" \
+            --set "project_name=Verify App" --set "module_path=example.com/verify-app"
+          templetry add doppler "$RUNNER_TEMP/out" --registry "$RUNNER_TEMP/registry.json" \
+            --set doppler_project=verify-app
+
+      - name: The binding carries the chosen variables and the runbook landed
+        working-directory: ${{ runner.temp }}/out
+        run: |
+          grep -q "project: verify-app" doppler.yaml || { echo "::error::doppler_project not applied"; cat doppler.yaml; exit 1; }
+          grep -q "config: dev" doppler.yaml
+          if grep -q "tpl:var" doppler.yaml; then echo "::error::directive left in output"; exit 1; fi
+          test -f docs/SECRETS.md
+
+      - name: The project still builds after adopting it
+        working-directory: ${{ runner.temp }}/out
+        run: |
+          go build ./...
+          go test ./...
+
   manifests:
     name: Every piece is declared
     runs-on: ubuntu-latest

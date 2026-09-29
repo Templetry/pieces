@@ -1,0 +1,5 @@
+# Doppler CLI repo config — `doppler setup` in this directory reads this file
+# and binds the repo to the right project/config without prompting.
+setup:
+  project: my-project # tpl:var doppler_project my-project
+  config: dev # tpl:var doppler_config dev

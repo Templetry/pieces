@@ -1,0 +1,20 @@
+schema_version: 1
+name: doppler
+description: Doppler for secrets — repo binding (doppler.yaml) and a runbook; env-driven ecosystems need no code changes
+# No applies_to: the environment-profile loaders in the forms already let a real
+# environment variable beat every file (ADR-0018), and `doppler run -- <cmd>`
+# is exactly that. So the piece adds files only — no socket, no patch.
+#
+# Deliberately not part of any form: a fresh project must build without an
+# account or a CLI from a third-party vendor. Doppler is the opt-in.
+#
+# Not for the Android forms yet: Gradle reads app/secrets.properties, not the
+# process environment, so they need a socket first.
+
+variables:
+  - key: doppler_project
+    label: Doppler project name
+    default: my-project
+  - key: doppler_config
+    label: Doppler config for local development
+    default: dev
