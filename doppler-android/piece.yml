@@ -1,0 +1,18 @@
+schema_version: 1
+name: doppler
+description: Doppler for secrets — generates app/secrets.properties from a Doppler config (Android implementation)
+# Same concept as the env-driven implementation in doppler/, different
+# mechanism: Gradle reads app/secrets.properties, not the process environment,
+# and that file already exists in the form — so instead of a socket the piece
+# ships a script that regenerates the (gitignored) file from Doppler. Nothing
+# existing is edited.
+applies_to:
+  - android-modular-features
+
+variables:
+  - key: doppler_project
+    label: Doppler project name
+    default: my-project
+  - key: doppler_config
+    label: Doppler config for local development
+    default: dev

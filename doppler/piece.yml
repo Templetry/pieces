@@ -1,15 +1,37 @@
 schema_version: 1
 name: doppler
 description: Doppler for secrets — repo binding (doppler.yaml) and a runbook; env-driven ecosystems need no code changes
-# No applies_to: the environment-profile loaders in the forms already let a real
-# environment variable beat every file (ADR-0018), and `doppler run -- <cmd>`
-# is exactly that. So the piece adds files only — no socket, no patch.
+# The forms whose configuration is read from the environment (ADR-0018): a real
+# environment variable beats every file, and `doppler run -- <cmd>` is exactly
+# that. So this implementation adds files only — no socket, no patch.
+applies_to:
+  - go-cli
+  - go-http-service
+  - go-rest-sqlite
+  - node-express-api
+  - node-fastify-api
+  - node-nestjs
+  - python-fastapi-service
+  - python-cli-typer
+  - python-fastapi-users
+  - rust-cli
+  - rust-axum-service
+  - jvm-spring-boot
+  - jvm-ktor
+  - dotnet-minimal-api
+  - dotnet-razor-web
+  - web-react-spa
+  - web-vue-spa
+  - web-nextjs
+  - web-svelte-spa
+  - web-react-router-ssr
 #
 # Deliberately not part of any form: a fresh project must build without an
 # account or a CLI from a third-party vendor. Doppler is the opt-in.
 #
-# Not for the Android forms yet: Gradle reads app/secrets.properties, not the
-# process environment, so they need a socket first.
+# Android has its own implementation (doppler-android/): Gradle reads
+# app/secrets.properties, not the process environment. KMP, iOS and meta forms
+# have no secrets file or env layer to feed, so they are not listed.
 
 variables:
   - key: doppler_project

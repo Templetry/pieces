@@ -143,6 +143,44 @@ jobs:
           go build ./...
           go test ./...
 
+  doppler-android:
+    name: doppler into android-modular-features
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Templetry/.github/actions/setup-templetry@main
+
+      - name: Point the catalog pieces at this commit
+        run: ./bin/registry-at-head.sh "$RUNNER_TEMP/registry.json"
+
+      - name: Render a project and adopt the piece
+        run: |
+          templetry init android/modular-features --out "$RUNNER_TEMP/out" \
+            --set "project_name=Verify App" --set "base_package=com.example.verify"
+          templetry add doppler "$RUNNER_TEMP/out" --registry "$RUNNER_TEMP/registry.json" \
+            --set doppler_project=verify-app
+
+      - name: The script maps Doppler names to what Gradle reads
+        working-directory: ${{ runner.temp }}/out
+        run: |
+          grep -q "project: verify-app" doppler.yaml
+          test -f docs/SECRETS.md
+          # A stand-in CLI: the point is the transformation, not Doppler.
+          mkdir -p "$RUNNER_TEMP/bin"
+          cat > "$RUNNER_TEMP/bin/doppler" <<'SHIM'
+          #!/bin/sh
+          echo DOPPLER_PROJECT=verify-app
+          echo SIGNING_KEY_ALIAS=release
+          echo SIGNING_KEYSTORE_PASSWORD=pw
+          echo API_BASE_URL_PRODUCTION=https://api.example.com
+          SHIM
+          chmod +x "$RUNNER_TEMP/bin/doppler"
+          PATH="$RUNNER_TEMP/bin:$PATH" bash scripts/doppler-secrets.sh
+          grep -qx "signing_key_alias=release" app/secrets.properties
+          grep -qx "signing_keystore_password=pw" app/secrets.properties
+          grep -qx "API_BASE_URL_PRODUCTION=https://api.example.com" app/secrets.properties
+          if grep -q DOPPLER_ app/secrets.properties; then echo "::error::DOPPLER_ metadata leaked"; exit 1; fi
+
   manifests:
     name: Every piece is declared
     runs-on: ubuntu-latest
